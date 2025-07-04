@@ -1,16 +1,44 @@
 ﻿@page
 @model IndexModel
+
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Login";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    
-    <a class="btn btn-lg btn-outline-primary px-4 py-2 mb-4 fw-semibold" asp-page="/gato"></a>
-        Visitar GATON 
-    </a>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Iniciar Sesión</h2>
 
+            <form method="post" class="p-4 rounded shadow-sm bg-light">
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" asp-for="LoginEmail" placeholder="Correo electrónico" />
+                    <label asp-for="LoginEmail">Correo electrónico</label>
+                    <span asp-validation-for="LoginEmail" class="text-danger"></span>
+                </div>
 
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" asp-for="LoginPassword" placeholder="Contraseña" />
+                    <label asp-for="LoginPassword">Contraseña</label>
+                    <span asp-validation-for="LoginPassword" class="text-danger"></span>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.LoginError))
+                {
+                    <div class="alert alert-danger">@Model.LoginError</div>
+                }
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Ingresar</button>
+                    <button type="button" class="btn btn-outline-secondary"
+                        onclick="window.location.href = '@Url.Page("/Register")';">
+                        Registrarse
+                    </button>
+                    <a asp-page="/ForgotPassword" class="btn btn-link text-decoration-none">
+                        Recuperar Contraseña
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
