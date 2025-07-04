@@ -39,7 +39,10 @@ namespace gaton.Pages
                     JsonSerializer.Deserialize<List<string>>(tableroJson)
                     ?? Enumerable.Repeat("", 9).ToList();
             }
-
+            if (!string.IsNullOrEmpty(ganador))
+            {
+                return;
+            }
             if (tablero[casillaSeleccionada] == "")
             {
                 tablero[casillaSeleccionada] = turno;
@@ -50,7 +53,6 @@ namespace gaton.Pages
                     turno = turno == "X" ? "O" : "X";
                 }
             }
-
             tableroJson = JsonSerializer.Serialize(tablero);
         }
 

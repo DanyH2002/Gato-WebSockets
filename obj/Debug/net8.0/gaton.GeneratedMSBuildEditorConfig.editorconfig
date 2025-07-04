@@ -30,6 +30,10 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/Pages/ForgotPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvRm9yZ290UGFzc3dvcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/Pages/gato.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvZ2F0by5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -38,8 +42,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/Pages/List.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTGlzdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/Pages/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvTG9naW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUHJpdmFjeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/Pages/Register.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvUmVnaXN0ZXIuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/Pages/Shared/_ValidationScriptsPartial.cshtml]

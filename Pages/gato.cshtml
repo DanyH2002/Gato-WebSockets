@@ -22,11 +22,10 @@ else
     <div class="tablero">
         @for (int i = 0; i < 9; i++)
         {
-            <button type="submit" name="CasillaSeleccionada" value="@i" class="casilla">
+            <button type="submit" name="CasillaSeleccionada" value="@i" class="casilla" @(Model.tablero[i] != "" || !string.IsNullOrEmpty(Model.ganador) ? "disabled" : "")> 
                 @Model.tablero[i]
             </button>
         }
-
     </div>
 </form>
 
@@ -43,18 +42,24 @@ else
     }
 
     .casilla {
-        background-color: #db5555;
+        background-color: #f17777;
         border: 2px solid #333;
         display: flex;
         justify-content: center;
         align-items: center;
         font-size: 2.5rem;
         cursor: pointer;
+        color:black;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
     }
 
     .casilla:disabled {
-        background-color: #a11313;
+        background-color: #f81e1e;
         cursor: default;
+        color:black;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
     }
 
     .casilla:hover:not(:disabled) {
@@ -62,7 +67,9 @@ else
     }
     
     .reiniciar{
-        background-color: rgb(97, 141, 213);
+        background-color: rgb(8, 66, 160);
         margin-top: 20px;
+        color: white;
+        font-size: 2rem;
     }
 </style>

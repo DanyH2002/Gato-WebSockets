@@ -1,7 +1,16 @@
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using gaton.Model;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddDbContext<PalyerContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("GameConnection"));
+});
+builder.Services.AddScoped<IValidator<Player>, gaton.Validators.PlayerValidator>();
 
 var app = builder.Build();
 

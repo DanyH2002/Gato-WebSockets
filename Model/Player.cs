@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace gaton.Model;
 
@@ -12,15 +12,14 @@ public class Player
     public int Id { get; set; }
 
     [Required]
-    [StringLength(50)]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [Required]
-    [StringLength(50)]
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     [Required]
-    [StringLength(100)]
-    public string Password { get; set; }
-
+    [StringLength(16, MinimumLength = 6)]
+    public string? Password { get; set; }
+    [Required]
+    public string? SecurityAnswer { get; set; }
 }
