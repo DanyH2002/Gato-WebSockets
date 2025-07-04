@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/Users/dust/Documents/Programacion/12_cuatrimestre/Sistemas_propietarios_III/gato_con_liz/gaton/gaton.csproj": {}
+    "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/gaton.csproj": {}
   },
   "projects": {
-    "/Users/dust/Documents/Programacion/12_cuatrimestre/Sistemas_propietarios_III/gato_con_liz/gaton/gaton.csproj": {
+    "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/gaton.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/dust/Documents/Programacion/12_cuatrimestre/Sistemas_propietarios_III/gato_con_liz/gaton/gaton.csproj",
+        "projectUniqueName": "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/gaton.csproj",
         "projectName": "gaton",
-        "projectPath": "/Users/dust/Documents/Programacion/12_cuatrimestre/Sistemas_propietarios_III/gato_con_liz/gaton/gaton.csproj",
-        "packagesPath": "/Users/dust/.nuget/packages/",
-        "outputPath": "/Users/dust/Documents/Programacion/12_cuatrimestre/Sistemas_propietarios_III/gato_con_liz/gaton/obj/",
+        "projectPath": "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/gaton.csproj",
+        "packagesPath": "/Users/huldadanielacrisantoluna/.nuget/packages/",
+        "outputPath": "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/dust/.nuget/NuGet/NuGet.Config"
+          "/Users/huldadanielacrisantoluna/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -42,6 +42,22 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[12.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[9.0.6, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.6, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
