@@ -3,37 +3,89 @@
 @{
     ViewData["Title"] = "Juego del Gato";
 }
-@if (!string.IsNullOrEmpty(Model.ganador))
-{
-    if(@Model.ganador == "X" || @Model.ganador == "O"){
-    <h2>Gano: @Model.ganador</h2>
-    }else{
-        <h2>Fue: @Model.ganador</h2>
-    }
 
-}
-else
-{
-    <h2>Turno: @Model.turno</h2>
-}
+<div class="titulo">¡Gato!</div>
+<hr />
 
-<form method="post">
-    <input type="hidden" name="Turno" value="@Model.turno" />
-    <div class="tablero">
-        @for (int i = 0; i < 9; i++)
-        {
-            <button type="submit" name="CasillaSeleccionada" value="@i" class="casilla" @(Model.tablero[i] != "" || !string.IsNullOrEmpty(Model.ganador) ? "disabled" : "")> 
-                @Model.tablero[i]
-            </button>
-        }
+<div class="contenedor-gato">
+    <div class="jugador">
+        <h3>Jugador 1</h3>
+        <div class="icono-turno">@((Model.turno == "O") ? "⭕" : "")</div>
     </div>
-</form>
 
-<form method="post" asp-page-handler="Reiniciar">
-    <button class="reiniciar" type="submit">Reiniciar Juego</button>
-</form>
+    <div class="centro">
+        @if (!string.IsNullOrEmpty(Model.ganador))
+        {
+            <h2 class="mensaje">@((Model.ganador == "X" || Model.ganador == "O") ? $"Ganó: {Model.ganador}" : $"Fue: {Model.ganador}")</h2>
+        }
+        else
+        {
+            <h2 class="mensaje">Turno: @Model.turno</h2>
+        }
+
+        <form method="post">
+            <input type="hidden" name="Turno" value="@Model.turno" />
+            <div class="tablero">
+                @for (int i = 0; i < 9; i++)
+                {
+                    <button type="submit" name="CasillaSeleccionada" value="@i" class="casilla" @(Model.tablero[i] != "" || !string.IsNullOrEmpty(Model.ganador) ? "disabled" : "")>
+                        @Model.tablero[i]
+                    </button>
+                }
+            </div>
+        </form>
+
+        <form method="post" asp-page-handler="Reiniciar">
+            <button class="reiniciar" type="submit">Reiniciar Juego</button>
+        </form>
+    </div>
+
+    <div class="jugador">
+        <h3>Jugador 2</h3>
+        <div class="icono-turno">@((Model.turno == "X") ? "❌" : "")</div>
+    </div>
+</div>
+
+<hr />
 
 <style>
+    .titulo {
+        text-align: center;
+        font-size: 2rem;
+        margin: 10px 0;
+        font-weight: bold;
+    }
+
+    .contenedor-gato {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 40px;
+        margin-top: 20px;
+    }
+
+    .jugador {
+        text-align: center;
+        font-size: 1.2rem;
+    }
+
+    .icono-turno {
+        font-size: 5rem;
+        margin-top: 10px;
+    }
+
+    .centro {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mensaje {
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
     .tablero {
         display: grid;
         grid-template-columns: repeat(3, 100px);
@@ -49,27 +101,37 @@ else
         align-items: center;
         font-size: 2.5rem;
         cursor: pointer;
-        color:black;
         font-weight: bold;
+        color: black;
         transition: background-color 0.3s ease;
     }
 
     .casilla:disabled {
         background-color: #f81e1e;
         cursor: default;
-        color:black;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
     }
 
     .casilla:hover:not(:disabled) {
         background-color: #e0e0e0;
     }
-    
-    .reiniciar{
+
+    .reiniciar {
         background-color: rgb(8, 66, 160);
-        margin-top: 20px;
         color: white;
-        font-size: 2rem;
+        font-size: 1.2rem;
+        padding: 10px 20px;
+        border: none;
+        margin-top: 20px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .reiniciar:hover {
+        background-color: rgb(5, 50, 120);
+    }
+
+    hr {
+        margin: 20px 0;
     }
 </style>
+ 

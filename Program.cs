@@ -1,7 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using gaton.Model;
-using gaton.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +10,8 @@ builder.Services.AddDbContext<PalyerContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("GameConnection"));
 });
-builder.Services.AddScoped<IValidator<Player>, PlayerValidator>();
-builder.Services.AddScoped<IValidator<Login>, LoginValidator>();
+builder.Services.AddScoped<IValidator<Player>, gaton.Validators.PlayerValidator>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
