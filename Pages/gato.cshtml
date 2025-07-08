@@ -35,63 +35,17 @@
             </div>
         </form>
 
-        <form method="post" asp-page-handler="Reiniciar">
-            <button class="reiniciar" type="submit">Reiniciar Juego</button>
-        </form>
-    </div>
-
-    <div class="jugador">
-        <h3>Jugador 2</h3>
-        <div class="icono-turno">@((Model.turno == "X") ? "❌" : "")</div>
-    </div>
-</div>
-
-<hr />
+<form method="post" asp-page-handler="Reiniciar">
+    <button class="reiniciar" type="submit">Reiniciar Juego</button>
+</form>
 
 <style>
-    .titulo {
-        text-align: center;
-        font-size: 2rem;
-        margin: 10px 0;
-        font-weight: bold;
-    }
-
-    .contenedor-gato {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 40px;
-        margin-top: 20px;
-    }
-
-    .jugador {
-        text-align: center;
-        font-size: 1.2rem;
-    }
-
-    .icono-turno {
-        font-size: 5rem;
-        margin-top: 10px;
-    }
-
-    .centro {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .mensaje {
-        margin-bottom: 10px;
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
-
     .tablero {
         display: grid;
         grid-template-columns: repeat(3, 100px);
         grid-template-rows: repeat(3, 100px);
         gap: 5px;
-    }
+        }
 
     .casilla {
         background-color: #f17777;
@@ -101,37 +55,32 @@
         align-items: center;
         font-size: 2.5rem;
         cursor: pointer;
+        color:black;
         font-weight: bold;
-        color: black;
         transition: background-color 0.3s ease;
-    }
-
+        }
+        
     .casilla:disabled {
         background-color: #f81e1e;
         cursor: default;
+        color:black;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
     }
 
     .casilla:hover:not(:disabled) {
         background-color: #e0e0e0;
     }
-
-    .reiniciar {
+    
+    .reiniciar{
         background-color: rgb(8, 66, 160);
         color: white;
         font-size: 1.2rem;
         padding: 10px 20px;
         border: none;
         margin-top: 20px;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-    .reiniciar:hover {
-        background-color: rgb(5, 50, 120);
-    }
-
-    hr {
-        margin: 20px 0;
+        color: white;
+        font-size: 2rem;
     }
 </style>
  

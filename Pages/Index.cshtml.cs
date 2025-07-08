@@ -16,12 +16,12 @@ public class IndexModel : PageModel
     }
 
     [BindProperty]
-    public string LoginEmail { get; set; }
+    public string? LoginEmail { get; set; }
 
     [BindProperty]
-    public string LoginPassword { get; set; }
+    public string? LoginPassword { get; set; }
 
-    public string LoginError { get; set; }
+    public string? LoginError { get; set; }
 
     public IActionResult OnPost()
     {
