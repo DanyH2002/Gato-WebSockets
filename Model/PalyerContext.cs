@@ -11,4 +11,6 @@ public class PalyerContext : DbContext
     }
 
     public DbSet<Player> Players { get; set; }
+    public DbSet<PlayerStats> PlayerStats { get; set; }
+
 }

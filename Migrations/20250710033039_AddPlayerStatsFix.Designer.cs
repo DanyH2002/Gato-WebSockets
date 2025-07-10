@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using gaton.Model;
 
@@ -10,9 +11,11 @@ using gaton.Model;
 namespace gaton.Migrations
 {
     [DbContext(typeof(PalyerContext))]
-    partial class PalyerContextModelSnapshot : ModelSnapshot
+    [Migration("20250710033039_AddPlayerStatsFix")]
+    partial class AddPlayerStatsFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
