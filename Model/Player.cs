@@ -21,5 +21,22 @@ public class Player
     [StringLength(16, MinimumLength = 6)]
     public string? Password { get; set; }
     [Required]
+    public SecurityQuestion Question { get; set; }
+
+    [Required]
     public string? SecurityAnswer { get; set; }
+}
+public enum SecurityQuestion
+{
+    [Display(Name = "¿Cuál era el nombre de tu mascota de la infancia?")]
+    MascotaDeInfancia,
+
+    [Display(Name = "¿En qué ciudad naciste?")]
+    CiudadDeNacimiento,
+
+    [Display(Name = "¿Cuál es tu comida favorita?")]
+    ComidaFavorita,
+
+    [Display(Name = "¿Cómo se llama tu mejor amigo?")]
+    NombreDelMejorAmigo
 }

@@ -24,6 +24,9 @@ public class PlayerValidator : AbstractValidator<Player>
             .Matches(@"[A-Z]").WithMessage("Debe tener al menos una letra mayúscula")
             .Matches(@"[a-z]").WithMessage("Debe tener al menos una letra minúscula")
             .Matches(@"\d").WithMessage("Debe contener al menos un número");
+            
+        RuleFor(player => player.Question)
+            .NotEmpty().WithMessage("La pregunta de seguridad es obligatoria.");
 
         RuleFor(player => player.SecurityAnswer)
             .NotEmpty().WithMessage("La respuesta de seguridad es obligatoria.");
