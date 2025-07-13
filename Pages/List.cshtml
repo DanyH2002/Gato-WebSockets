@@ -1,4 +1,35 @@
 ﻿@page
-@model gaton.Pages.ListModel
+@model LobbyModel
 @{
+    ViewData["Title"] = "Lobby";
 }
+
+<div style="text-align:center; margin-top: 20px;">
+    <h2>¡Bienvenido Jugador8!</h2>
+    <p>Puntos actuales: <strong>98</strong></p>
+
+    <form method="post">
+        <button class="btn btn-primary" type="submit">Jugar</button>
+    </form>
+</div>
+
+<hr />
+
+<div class="container mt-4">
+    <h3>Ranking de Jugadores</h3>
+    <table class="table table-striped table-bordered mt-2">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Puntos</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Jugador8</td><td>86</td></tr>
+            <tr><td>Jugador4</td><td>84</td></tr>
+            <tr><td>Jugador3</td><td>66</td></tr>
+            <tr><td>Jugador2</td><td>56</td></tr>
+            <tr><td>Jugador5</td><td>35</td></tr>
+        </tbody>
+    </table>
+</div>

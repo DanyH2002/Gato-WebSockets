@@ -4750,19 +4750,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/huldadanielacrisantoluna/.nuget/packages/": {}
+    "C:\\Users\\xquio\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/gaton.csproj",
+      "projectUniqueName": "C:\\Users\\xquio\\Documents\\12vo Cuatrimestre\\Sistemas Propetarios 3\\Gaton\\Gato-WebSockets\\gaton.csproj",
       "projectName": "gaton",
-      "projectPath": "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/gaton.csproj",
-      "packagesPath": "/Users/huldadanielacrisantoluna/.nuget/packages/",
-      "outputPath": "/Users/huldadanielacrisantoluna/Documents/propietarios/12vo/blazor_gato/gaton/gaton/obj/",
+      "projectPath": "C:\\Users\\xquio\\Documents\\12vo Cuatrimestre\\Sistemas Propetarios 3\\Gaton\\Gato-WebSockets\\gaton.csproj",
+      "packagesPath": "C:\\Users\\xquio\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\xquio\\Documents\\12vo Cuatrimestre\\Sistemas Propetarios 3\\Gaton\\Gato-WebSockets\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/huldadanielacrisantoluna/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\xquio\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -4785,7 +4785,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
       "net8.0": {
@@ -4817,6 +4818,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.12, 8.0.12]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[8.0.12, 8.0.12]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.12, 8.0.12]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.12, 8.0.12]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -4825,7 +4844,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.401/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

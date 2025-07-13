@@ -1,12 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc;
 
-namespace gaton.Pages
+public class LobbyModel : PageModel
 {
-    public class ListModel : PageModel
+    public void OnGet()
     {
-        public void OnGet()
-        {
-        }
+    }
+
+    public IActionResult OnPost()
+    {
+        // Simula redirección al juego
+        return RedirectToPage("/Gato");
     }
 }
