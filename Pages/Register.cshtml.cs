@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using gaton.Model;
 using FluentValidation;
+using gaton.WebSockets;
 
 namespace gaton.Pages
 {
@@ -51,6 +52,7 @@ namespace gaton.Pages
             TempData["PlayerId"] = player.Id;
             TempData["PlayerName"] = player.Name;
 
+            WebSocketClient.ConnectAsync(player.Name).Wait();
             return RedirectToPage("List");
         }
     }

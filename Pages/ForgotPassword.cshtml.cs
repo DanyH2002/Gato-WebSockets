@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using gaton.Model;
 using FluentValidation;
+using gaton.WebSockets;
+
 
 namespace gaton.Pages
 {
@@ -18,10 +20,41 @@ namespace gaton.Pages
         [BindProperty]
         public RecoverPassword RecoverRequest { get; set; } = new();
 
+        [BindProperty]
+        public string? PlayerIdTemp { get; set; }
+
+        public SecurityQuestion? PreguntaDelUsuario { get; set; }
+
+        public bool MostrarSegundaEtapa { get; set; } = false;
+
         public string? ResultMessage { get; set; }
 
-        public IActionResult OnPost()
+        public IActionResult OnPostBuscar()
         {
+            var email = RecoverRequest.Email?.Trim().ToLower();
+            var player = _context.Players.FirstOrDefault(p => p.Email.ToLower() == email);
+
+            if (player != null)
+            {
+                PreguntaDelUsuario = player.Question;
+                PlayerIdTemp = player.Id.ToString();
+                MostrarSegundaEtapa = true;
+            }
+            else
+            {
+                ResultMessage = "Correo no encontrado.";
+            }
+            return Page();
+        }
+        public IActionResult OnPostCambiar()
+        {
+            if (!int.TryParse(PlayerIdTemp, out int id)) return Page();
+            var player = _context.Players.FirstOrDefault(p => p.Id == id);
+            if (player == null || !SimilarEnough(player.SecurityAnswer, RecoverRequest.SecurityAnswer ?? ""))
+            {
+                ResultMessage = "La respuesta no coincide.";
+                return Page();
+            }
             var validation = _validator.Validate(RecoverRequest);
             if (!validation.IsValid)
             {
@@ -29,29 +62,15 @@ namespace gaton.Pages
                 return Page();
             }
 
-            var player = _context.Players.FirstOrDefault(p =>
-                p.Email == RecoverRequest.Email &&
-                p.Question == RecoverRequest.Question);
-            System.Diagnostics.Debug.WriteLine($"Question: {RecoverRequest.Question}, Email: {RecoverRequest.Email}");
-            System.Diagnostics.Debug.WriteLine($"Player Found: {player?.Email}, Stored Question: {player?.Question}");
-
-
-            if (player == null)
-            {
-                ResultMessage = "Usuario no encontrado o pregunta incorrecta.";
-                return Page();
-            }
-            bool respuestaCoincide = SimilarEnough(player.SecurityAnswer, RecoverRequest.SecurityAnswer);
-            if (!respuestaCoincide)
-            {
-                ResultMessage = "La respuesta de seguridad no coincide.";
-                return Page();
-            }
-
             player.Password = RecoverRequest.NewPassword;
             _context.SaveChanges();
+            
+            TempData["PlayerId"] = player.Id;
+            TempData["PlayerName"] = player.Name;
 
             ResultMessage = "Tu contraseña fue actualizada con éxito.";
+
+            WebSocketClient.ConnectAsync(player.Name).Wait();
             return RedirectToPage("List");
         }
         private bool SimilarEnough(string original, string ingreso)

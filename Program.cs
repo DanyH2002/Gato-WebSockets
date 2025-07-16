@@ -35,5 +35,5 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
-
+gaton.WebSockets.WebSocketServerLauncher.Start();
 app.Run();

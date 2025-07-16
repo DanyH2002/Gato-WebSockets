@@ -7,16 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fleck" Version="1.2.0" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Hubs/" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>
