@@ -52,7 +52,6 @@ namespace gaton.Pages
             TempData["PlayerId"] = player.Id;
             TempData["PlayerName"] = player.Name;
 
-            WebSocketClient.ConnectAsync(player.Name).Wait();
             return RedirectToPage("List");
         }
     }

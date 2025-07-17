@@ -64,13 +64,12 @@ namespace gaton.Pages
 
             player.Password = RecoverRequest.NewPassword;
             _context.SaveChanges();
-            
+
             TempData["PlayerId"] = player.Id;
             TempData["PlayerName"] = player.Name;
 
             ResultMessage = "Tu contraseña fue actualizada con éxito.";
 
-            WebSocketClient.ConnectAsync(player.Name).Wait();
             return RedirectToPage("List");
         }
         private bool SimilarEnough(string original, string ingreso)

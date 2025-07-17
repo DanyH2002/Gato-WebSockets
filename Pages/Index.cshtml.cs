@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using gaton.Model;
 using FluentValidation;
 using gaton.WebSockets;
-
+using Newtonsoft.Json;
 
 namespace gaton.Pages;
 
@@ -52,7 +52,6 @@ public class IndexModel : PageModel
         TempData["PlayerId"] = player.Id;
         TempData["PlayerName"] = player.Name;
 
-        WebSocketClient.ConnectAsync(player.Name).Wait();
         return RedirectToPage("List");
     }
 }

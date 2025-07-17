@@ -7,6 +7,11 @@
 
 <div class="container mt-5">
     <h2 class="text-center mb-4">🎮 Bienvenido: @Model.NombreJugadorActual</h2>
+    <div id="mensajeBienvenida" class="alert alert-success alert-dismissible fade show d-none text-center" role="alert">
+        <span id="textoMensaje"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+
 
     <div class="row">
         <div class="col-md-7">
@@ -76,3 +81,30 @@
 
     </div>
 </div>
+
+<script>
+    const playerName = "@TempData["PlayerName"]";
+    const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
+
+    socket.onopen = () => {
+        console.log(`Conectado como ${playerName}`);
+        socket.send(JSON.stringify({
+            action_type: "identify",
+            value: { name: playerName }
+        }));
+    };
+
+    socket.onmessage = event => {
+        const data = JSON.parse(event.data);
+        if (data.action === "welcome") {
+            const mensajeDiv = document.getElementById("mensajeBienvenida");
+            const textoSpan = document.getElementById("textoMensaje");
+
+            textoSpan.textContent = data.msg;
+            mensajeDiv.classList.remove("d-none");
+            setTimeout(() => {
+                mensajeDiv.classList.add("d-none");
+            }, 3000);
+        }
+    };
+</script>
