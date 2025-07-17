@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("gaton")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+20fad16cc5954065ddab77c2927e42ebb5445714")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b10377ba98d8bf9db3fb0f6c720d6c0e9f17197b")]
 [assembly: System.Reflection.AssemblyProductAttribute("gaton")]
 [assembly: System.Reflection.AssemblyTitleAttribute("gaton")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
