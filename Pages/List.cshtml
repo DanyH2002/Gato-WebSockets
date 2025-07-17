@@ -64,10 +64,20 @@
 </div>
 
 <script>
-    const playerName = "@TempData["PlayerName"]";
+    // Nombre del jugador
+    let playerName = sessionStorage.getItem("PlayerName");
+    if (!playerName || playerName === "Invitado") {
+        playerName = "@Model.NombreJugadorActual";
+        sessionStorage.setItem("PlayerName", playerName);
+    }
+
+    // Actualizar bienvenida 
+    document.querySelector("h2.text-center.mb-4").textContent = `🎮 Bienvenido: ${playerName}`;
+
+    // Conexion WebSocket
     const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
 
-    socket.onopen = () => { // Conexión establecida 
+    socket.onopen = () => { 
         console.log(`Conectado como ${playerName}`);
         socket.send(JSON.stringify({
             action_type: "identify",
@@ -127,7 +137,7 @@
         const lista = document.getElementById("listaSalas");
         lista.innerHTML = "";
 
-        salas.forEach(room => { 
+        salas.forEach(room => {
             const li = document.createElement("li");
             li.className = "list-group-item d-flex justify-content-between align-items-center";
 

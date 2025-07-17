@@ -52,18 +52,6 @@ public static class WebSocketServerLauncher
                 try
                 {
                     var entry = JsonConvert.DeserializeObject<EntryModel>(message);
-
-                    // if (entry?.Action_Type == "identify")
-                    // {
-                    //     var name = entry.Value?.Name;
-                    //     Console.WriteLine($"Identificado como: {name}");
-
-                    //     SendTo(name, new
-                    //     {
-                    //         action = "welcome",
-                    //         msg = $"¡Bienvenido al Juego del Gato, {name}!"
-                    //     });
-                    // }
                     var playerName = entry.Value?.Name;
                     switch (entry.Action_Type)
                     {
@@ -74,6 +62,7 @@ public static class WebSocketServerLauncher
                                 action = "welcome",
                                 msg = $"¡Bienvenido al Juego del Gato, {playerName}!"
                             });
+                            RoomManager.SendRoomListTo(playerName);
                             break;
                         case "create":
                             RoomManager.HandleCreate(playerName);
