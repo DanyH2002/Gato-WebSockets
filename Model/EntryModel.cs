@@ -14,4 +14,6 @@ public class Payload
     public string? RoomId { get; set; }
     public string? MoveData { get; set; }
     public bool? RematchAccepted { get; set; }
+    public int? Casilla { get; set; }
+    public string? Message { get; set; }
 }

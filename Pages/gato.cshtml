@@ -2,48 +2,42 @@
 @model gaton.Pages.GatoModel
 @{
     ViewData["Title"] = "Juego del Gato";
+    ViewData["BodyClass"] = "gato-page";
 }
 
 <div class="titulo">¡Gato!</div>
 <hr />
 
+<div id="inicioPartida" class="alert alert-info text-center d-none" role="alert">
+    <strong>🎮 La partida ha comenzado. ¡Buena suerte!</strong>
+</div>
+
 <div class="contenedor-gato">
     <div class="jugador">
         <h3>Jugador 1</h3>
-        <div class="icono-turno">@((Model.turno == "O") ? "⭕" : "")</div>
+        <div class="icono-turno" id="turnoO"></div>
     </div>
 
     <div class="centro">
-        @if (!string.IsNullOrEmpty(Model.ganador))
-        {
-            <h2 class="mensaje">@((Model.ganador == "X" || Model.ganador == "O") ? $"Ganó: {Model.ganador}" : $"Fue: {Model.ganador}")</h2>
-        }
-        else
-        {
-            <h2 class="mensaje">Turno: @Model.turno</h2>
-        }
+        <h2 class="mensaje" id="mensajeJuego">Esperando partida...</h2>
+        <h4 id="turnoActual" class="text-info mt-2"></h4>
+        <div id="timerTurno" class="badge bg-warning text-dark fs-5 mt-2"></div>
 
-        <form method="post">
-            <input type="hidden" name="Turno" value="@Model.turno" />
-            <div class="tablero">
-                @for (int i = 0; i < 9; i++)
-                {
-                    <button type="submit" name="CasillaSeleccionada" value="@i" class="casilla" @(Model.tablero[i] != "" || !string.IsNullOrEmpty(Model.ganador) ? "disabled" : "")>
-                        @Model.tablero[i]
-                    </button>
-                }
-            </div>
-        </form>
+        <div class="tablero">
+            @for (int i = 0; i < 9; i++)
+            {
+                <button type="button" class="casilla" id="casilla-@i"></button>
+            }
+        </div>
 
-        <form method="post" asp-page-handler="Reiniciar">
-            <button class="reiniciar" type="submit">Reiniciar Juego</button>
-            <button class="btn btn-outline-secondary" type="button" onclick="window.location.href = '@Url.Page("/List")';"> ⬅ Volver al Lobby</button>
-        </form>
+        <button class="btn btn-outline-secondary mt-3" type="button" onclick="window.location.href = '/Lobby';">
+            ⬅ Volver al Lobby
+        </button>
     </div>
 
     <div class="jugador">
         <h3>Jugador 2</h3>
-        <div class="icono-turno">@((Model.turno == "X") ? "❌" : "")</div>
+        <div class="icono-turno" id="turnoX"></div>
     </div>
 </div>
 
@@ -73,6 +67,7 @@
     .icono-turno {
         font-size: 5rem;
         margin-top: 10px;
+        transition: transform 0.3s ease;
     }
 
     .centro {
@@ -116,22 +111,114 @@
         background-color: #e0e0e0;
     }
 
-    .reiniciar {
-        background-color: rgb(8, 66, 160);
-        color: white;
-        font-size: 1.2rem;
-        padding: 10px 20px;
-        border: none;
-        margin-top: 20px;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-    .reiniciar:hover {
-        background-color: rgb(5, 50, 120);
-    }
-
     hr {
         margin: 20px 0;
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+    const playerName = sessionStorage.getItem("PlayerName");
+    const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
+    let tiempoRestante = 15;
+    let intervaloTimer;
+
+    socket.onopen = () => {
+        socket.send(JSON.stringify({
+            action_type: "identify",
+            value: { name: playerName }
+        }));
+    };
+
+    socket.onmessage = event => {
+        const data = JSON.parse(event.data);
+
+        if (data.action === "update-board") {
+            actualizarTablero(data.tablero, data.turno, data.ganador);
+        }
+
+        if (data.action === "endgame") {
+            mostrarMensajeFinal(data.msg);
+        }
+
+        if (data.action === "timeout") {
+            mostrarMensajeFinal(data.msg);
+        }
+
+        if (data.action === "room-joined") {
+            document.getElementById("inicioPartida").classList.remove("d-none");
+        }
+    };
+
+    function enviarMovimiento(index) {
+        socket.send(JSON.stringify({
+            action_type: "move",
+            value: {
+                name: playerName,
+                casilla: index
+            }
+        }));
+    }
+
+    function actualizarTablero(tablero, turno, ganador) {
+        for (let i = 0; i < 9; i++) {
+            const btn = document.getElementById(`casilla-${i}`);
+            btn.textContent = tablero[i];
+            btn.disabled = tablero[i] !== "" || ganador !== null;
+        }
+
+        const mensaje = document.getElementById("mensajeJuego");
+        mensaje.textContent = ganador
+            ? (ganador === "Empate" ? "Fue: Empate" : `Ganó: ${ganador}`)
+            : `Turno: ${turno}`;
+
+        document.getElementById("turnoX").textContent = turno === "X" ? "❌" : "";
+        document.getElementById("turnoO").textContent = turno === "O" ? "⭕" : "";
+
+        const miSimbolo = obtenerSimboloJugador();
+        const turnoActual = document.getElementById("turnoActual");
+        turnoActual.textContent = turno === miSimbolo
+            ? "🕹️ ¡Es tu turno!"
+            : "⏳ Esperando al oponente...";
+
+        iniciarTimer();
+    }
+
+    function obtenerSimboloJugador() {
+        return playerName.endsWith("X") ? "X" : "O";
+    }
+
+    function iniciarTimer() {
+        clearInterval(intervaloTimer);
+        tiempoRestante = 15;
+        const timerDiv = document.getElementById("timerTurno");
+        timerDiv.textContent = `⏱ ${tiempoRestante}s`;
+
+        intervaloTimer = setInterval(() => {
+            tiempoRestante--;
+            timerDiv.textContent = `⏱ ${tiempoRestante}s`;
+            if (tiempoRestante <= 0) {
+                clearInterval(intervaloTimer);
+            }
+        }, 1000);
+    }
+
+    function mostrarMensajeFinal(msg) {
+        const mensaje = document.getElementById("mensajeJuego");
+        mensaje.textContent = msg;
+
+        if (msg.includes("Ganó")) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+    }
+
+    for (let i = 0; i < 9; i++) {
+        document.getElementById(`casilla-${i}`).addEventListener("click", () => {
+            enviarMovimiento(i);
+        });
+    }
+</script>

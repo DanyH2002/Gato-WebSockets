@@ -10,17 +10,6 @@ Gestion del estado de las rooms
 public class RoomManager
 {
     private static readonly Dictionary<string, RoomModel> ActiveRooms = new();
-    private static bool PlayerInRoom(string playerName)
-    {
-        foreach (var room in ActiveRooms.Values) // Recorre todas las salas
-        {
-            if (room.Players.Contains(playerName)) // Si el jugador está en la sala
-            {
-                return true;
-            }
-        }
-        return false;
-    }
     public static void HandleCreate(string name)
     {
         if (PlayerInRoom(name))
@@ -92,6 +81,17 @@ public class RoomManager
         }
         BroadcastRoomList();
         Console.WriteLine($"{name} se ha unido a la sala: {roomId}");
+        // Inicar el juego
+        if (room.Players.Count == 2)
+        {
+            GameSessionManager.StartGame(roomId, room.Players);
+            Console.WriteLine($"Partida iniciada en la sala: {roomId}");
+            WebSocketServerLauncher.SendTo(name, new
+            {
+                action = "game-started",
+                msg = "Partida iniciada. ¡Buena suerte!"
+            });
+        }
     }
     public static void HandleLeave(string name, string roomId)
     {
@@ -144,6 +144,7 @@ public class RoomManager
         BroadcastRoomList();
         Console.WriteLine($"{name} ha abandonado la sala: {roomId}, y se le aviso a los demas");
     }
+    //* Metodos auxiliares
     public static void SendRoomListTo(string playerName)
     {
         var roomList = ActiveRooms.Select(r => new
@@ -165,6 +166,27 @@ public class RoomManager
         {
             SendRoomListTo(player);
         }
+    }
+    private static bool PlayerInRoom(string playerName)
+    {
+        foreach (var room in ActiveRooms.Values) // Recorre todas las salas
+        {
+            if (room.Players.Contains(playerName)) // Si el jugador está en la sala
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    //busca en todas las salas activas y devuelve el RoomId si el jugador está en alguna
+    public static string? GetRoomIdOfPlayer(string playerName)
+    {
+        foreach (var kvp in ActiveRooms)
+        {
+            if (kvp.Value.Players.Contains(playerName))
+                return kvp.Key;
+        }
+        return null;
     }
 
 }

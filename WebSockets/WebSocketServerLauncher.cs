@@ -76,13 +76,15 @@ public static class WebSocketServerLauncher
                             RoomManager.HandleLeave(playerName, entry.Value.RoomId);
                             break;
 
-                        // case "move":
-                        //     GameSessionManager.HandleMove(playerName, entry.Value.MoveData);
-                        //     break;
+                        case "move":
+                            if (entry.Value?.Casilla is int casilla)
+                            {
+                                GameSessionManager.HandleMove(playerName, casilla);
+                            }
+                            break;
+                        case "rematch":
 
-                        // case "rematch":
-                        //     RematchConnection.HandleRematchResponse(playerName, entry.Value.RematchAccepted);
-                        //     break;
+                            break;
                         default:
                             Console.WriteLine("Mensaje no reconocido");
                             break;
@@ -97,6 +99,7 @@ public static class WebSocketServerLauncher
 
         Console.WriteLine("Servidor WebSocket iniciado en ws://localhost:9001");
     }
+    // Envia un mensaje a todos los jugadores conectados
     public static void Broadcast(string message)
     {
         foreach (var socket in ConnectedPlayers.Values)
@@ -104,7 +107,7 @@ public static class WebSocketServerLauncher
             socket.Send(JsonConvert.SerializeObject(new { action = "system", msg = message }));
         }
     }
-
+    // Envia un mensaje a un jugador específico
     public static void SendTo(string playerName, object payload)
     {
         if (ConnectedPlayers.TryGetValue(playerName, out var socket))
@@ -113,6 +116,7 @@ public static class WebSocketServerLauncher
             socket.Send(json);
         }
     }
+    // Obtiene los nombres de los jugadores conectados
     public static IEnumerable<string> GetConnectedPlayerNames()
     {
         return ConnectedPlayers.Keys;

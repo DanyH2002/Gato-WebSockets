@@ -1,4 +1,9 @@
 using System;
+using gaton.Model;
+using gaton.WebSockets;
+using System.Collections.Generic;
+using System.Linq;
+using System.Timers;
 
 namespace gaton.WebSockets;
 /*
@@ -6,5 +11,147 @@ Control de turnos, timer del juego, y union con la logica de juego.
 */
 public class GameSessionManager
 {
+    private static readonly Dictionary<string, GameSession> ActiveGames = new();
+    private static readonly Dictionary<string, System.Timers.Timer> TurnTimers = new();
+    public static void StartGame(string roomId, List<string> players)
+    {
+        if (players.Count != 2)
+        {
+            return;
+        }
+        var game = new GameSession
+        {
+            RoomId = roomId,
+            Tablero = Enumerable.Repeat("", 9).ToArray(),
+            Turno = "X",
+            PlayerSymbols = new Dictionary<string, string>
+            {
+                { players[0], "X" },
+                { players[1], "O" }
+            }
+        };
+        ActiveGames[roomId] = game;
+        StartTurnTimer(roomId);
+        BroadcastGameState(roomId);
+    }
+    public static void HandleMove(string playerName, int casilla)
+    {
+        var roomId = RoomManager.GetRoomIdOfPlayer(playerName);
+        if (roomId == null || !ActiveGames.ContainsKey(roomId)) return;
 
+        var game = ActiveGames[roomId];
+        if (game.Ganador != null || game.Tablero[casilla] != "") return;
+
+        if (game.PlayerSymbols[playerName] != game.Turno) return;
+
+        game.Tablero[casilla] = game.Turno;
+        game.Ganador = VerificarGanador(game.Tablero);
+
+        if (game.Ganador == null)
+        {
+            game.Turno = game.Turno == "X" ? "O" : "X";
+            StartTurnTimer(roomId);
+        }
+        else
+        {
+            EndGame(roomId);
+        }
+
+        BroadcastGameState(roomId);
+    }
+    private static void EndGame(string roomId)
+    {
+        if (!ActiveGames.ContainsKey(roomId)) return;
+
+        var game = ActiveGames[roomId];
+        StopTurnTimer(roomId);
+
+        foreach (var jugador in game.PlayerSymbols.Keys)
+        {
+            WebSocketServerLauncher.SendTo(jugador, new
+            {
+                action = "endgame",
+                ganador = game.Ganador,
+                msg = game.Ganador == "Empate"
+                    ? "🤝 ¡Empate!"
+                    : $"🎉 ¡Ganó {game.Ganador}!"
+            });
+        }
+    }
+    //** Metodo complementarios
+    private static void BroadcastGameState(string roomId)
+    {
+        var game = ActiveGames[roomId];
+        foreach (var jugador in game.PlayerSymbols.Keys)
+        {
+            WebSocketServerLauncher.SendTo(jugador, new
+            {
+                action = "update-board",
+                tablero = game.Tablero,
+                turno = game.Turno,
+                ganador = game.Ganador
+            });
+        }
+    }
+    private static string? VerificarGanador(string[] tab)
+    {
+        int[][] jugadas = new int[][]
+        {
+            new[] { 0, 1, 2 }, new[] { 3, 4, 5 }, new[] { 6, 7, 8 },
+            new[] { 0, 3, 6 }, new[] { 1, 4, 7 }, new[] { 2, 5, 8 },
+            new[] { 0, 4, 8 }, new[] { 2, 4, 6 }
+        };
+
+        foreach (var j in jugadas)
+        {
+            string a = tab[j[0]], b = tab[j[1]], c = tab[j[2]];
+            if (!string.IsNullOrEmpty(a) && a == b && b == c)
+                return a;
+        }
+
+        if (tab.All(c => !string.IsNullOrEmpty(c)))
+            return "Empate";
+
+        return null;
+    }
+    //** Timer por turno
+    private static void StartTurnTimer(string roomId)
+    {
+        StopTurnTimer(roomId);
+        var timer = new System.Timers.Timer(15000); // 15 segundos
+        timer.Elapsed += (sender, e) =>
+        {
+            if (!ActiveGames.ContainsKey(roomId)) return;
+
+            var game = ActiveGames[roomId];
+            string currentTurn = game.Turno;
+            string? jugador = game.PlayerSymbols.FirstOrDefault(p => p.Value == currentTurn).Key;
+
+            if (jugador != null)
+            {
+                WebSocketServerLauncher.SendTo(jugador, new
+                {
+                    action = "timeout",
+                    msg = "⏱ Se agotó tu tiempo. Turno perdido."
+                });
+
+                game.Turno = currentTurn == "X" ? "O" : "X";
+                BroadcastGameState(roomId);
+                StartTurnTimer(roomId);
+            }
+        };
+
+        timer.AutoReset = false;
+        timer.Start();
+        TurnTimers[roomId] = timer;
+    }
+    private static void StopTurnTimer(string roomId)
+    {
+        if (TurnTimers.TryGetValue(roomId, out var timer))
+        {
+            timer.Stop();
+            timer.Dispose();
+            TurnTimers.Remove(roomId);
+        }
+    }
 }
