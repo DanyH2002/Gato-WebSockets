@@ -42,7 +42,7 @@ public class GameSessionManager
         var game = ActiveGames[roomId];
         if (game.Ganador != null || game.Tablero[casilla] != "") return;
 
-        if (game.PlayerSymbols[playerName] != game.Turno) return;
+        if (GetSymbolByPlayer(playerName, game) != game.Turno) return;
 
         game.Tablero[casilla] = game.Turno;
         game.Ganador = VerificarGanador(game.Tablero);
@@ -65,6 +65,7 @@ public class GameSessionManager
 
         var game = ActiveGames[roomId];
         StopTurnTimer(roomId);
+        StatsManager.RegistrarResultado(game);
 
         foreach (var jugador in game.PlayerSymbols.Keys)
         {
@@ -84,14 +85,19 @@ public class GameSessionManager
         var game = ActiveGames[roomId];
         foreach (var jugador in game.PlayerSymbols.Keys)
         {
+            Console.WriteLine("$[PlayerSymbols] {jugador} = {game.PlayerSymbols[jugador]}");
             WebSocketServerLauncher.SendTo(jugador, new
             {
                 action = "update-board",
                 tablero = game.Tablero,
                 turno = game.Turno,
-                ganador = game.Ganador
+                ganador = game.Ganador,
+                simbolo = game.PlayerSymbols[jugador],
+                //msg = $"Turno de {jugador} y simbolo {game.PlayerSymbols[jugador]}"
             });
         }
+        var jugadorDelTurno = GetPlayerNameBySymbol(game.Turno, game);
+        Console.WriteLine($"Juego actualizado en la sala: {roomId}, turno de {game.Turno} para {jugadorDelTurno}, ganador: {game.Ganador}");
     }
     private static string? VerificarGanador(string[] tab)
     {
@@ -114,6 +120,15 @@ public class GameSessionManager
 
         return null;
     }
+    private static string? GetPlayerNameBySymbol(string simbolo, GameSession game)
+    {
+        return game.PlayerSymbols.FirstOrDefault(p => p.Value == simbolo).Key;
+    }
+    private static string? GetSymbolByPlayer(string playerName, GameSession game)
+    {
+        return game.PlayerSymbols.TryGetValue(playerName, out var symbol) ? symbol : null;
+    }
+
     //** Timer por turno
     private static void StartTurnTimer(string roomId)
     {
@@ -125,7 +140,8 @@ public class GameSessionManager
 
             var game = ActiveGames[roomId];
             string currentTurn = game.Turno;
-            string? jugador = game.PlayerSymbols.FirstOrDefault(p => p.Value == currentTurn).Key;
+            string? jugador = GetPlayerNameBySymbol(currentTurn, game);
+
 
             if (jugador != null)
             {
@@ -153,5 +169,45 @@ public class GameSessionManager
             timer.Dispose();
             TurnTimers.Remove(roomId);
         }
+    }
+    //** Revancha
+    public static void RequestRematch(string playerName)
+    {
+        var roomId = RoomManager.GetRoomIdOfPlayer(playerName);
+        if (roomId == null || !ActiveGames.ContainsKey(roomId)) return;
+
+        var game = ActiveGames[roomId];
+        game.JugadoresQueAceptaronRevancha.Add(playerName);
+
+        foreach (var jugador in game.PlayerSymbols.Keys)
+        {
+            WebSocketServerLauncher.SendTo(jugador, new
+            {
+                action = "revancha-status",
+                jugadores = game.JugadoresQueAceptaronRevancha.Count,
+                total = game.PlayerSymbols.Count
+            });
+        }
+        if (game.JugadoresQueAceptaronRevancha.Count == game.PlayerSymbols.Count)
+        {
+            // reinicia partida
+            game.Tablero = Enumerable.Repeat("", 9).ToArray();
+            game.Turno = "X";
+            game.Ganador = null;
+            game.JugadoresQueAceptaronRevancha.Clear();
+
+            BroadcastGameState(roomId);
+            StartTurnTimer(roomId);
+        }
+    }
+    public static void RejectRematch(string playerName)
+    {
+        var roomId = RoomManager.GetRoomIdOfPlayer(playerName);
+        RoomManager.HandleLeave(playerName, roomId);
+        WebSocketServerLauncher.SendTo(playerName, new
+        {
+            action = "revancha-rechazada",
+            msg = "Has salido de la sala. ¡Puedes unirte a otra partida!"
+        });
     }
 }

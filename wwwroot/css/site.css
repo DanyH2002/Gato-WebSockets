@@ -8,7 +8,11 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
@@ -23,11 +27,57 @@ body {
 
 /** Solo se aplica en la página del juego */
 body.gato-page #inicioPartida {
-    font-size: 1.2rem;
-    animation: fadeIn 0.5s ease-in-out;
+  font-size: 1.2rem;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  50% {
+    transform: translateX(5px);
+  }
+
+  75% {
+    transform: translateX(-5px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes flash {
+  0% {
+    transform: scale(1);
+    background-color: #dc3545;
+  }
+
+  50% {
+    transform: scale(1.05);
+    background-color: #ff6b6b;
+  }
+
+  100% {
+    transform: scale(1);
+    background-color: #dc3545;
+  }
 }

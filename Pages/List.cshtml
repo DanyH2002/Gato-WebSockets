@@ -77,12 +77,19 @@
     // Conexion WebSocket
     const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
 
-    socket.onopen = () => { 
+    socket.onopen = () => {
         console.log(`Conectado como ${playerName}`);
         socket.send(JSON.stringify({
             action_type: "identify",
             value: { name: playerName }
         }));
+
+        setTimeout(() => {
+            socket.send(JSON.stringify({
+                action_type: "request-room-list",
+                value: { name: playerName }
+            }));
+        }, 200);
     };
 
     socket.onmessage = event => { // Mensaje recibido del servidor
@@ -94,6 +101,7 @@
         }
 
         if (data.action === "room-list") { // Lista de salas
+            console.log("Salas recibidas:", data.rooms);
             renderizarSalas(data.rooms);
             return;
         }

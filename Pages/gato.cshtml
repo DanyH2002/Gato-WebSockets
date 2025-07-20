@@ -15,7 +15,7 @@
 <div class="contenedor-gato">
     <div class="jugador">
         <h3>Jugador 1</h3>
-        <div class="icono-turno" id="turnoO"></div>
+        <div class="icono-turno" id="turnoX"></div>
     </div>
 
     <div class="centro">
@@ -23,7 +23,7 @@
         <h4 id="turnoActual" class="text-info mt-2"></h4>
         <div id="timerTurno" class="badge bg-warning text-dark fs-5 mt-2"></div>
 
-        <div class="tablero">
+        <div class="tablero mt-3">
             @for (int i = 0; i < 9; i++)
             {
                 <button type="button" class="casilla" id="casilla-@i"></button>
@@ -37,7 +37,7 @@
 
     <div class="jugador">
         <h3>Jugador 2</h3>
-        <div class="icono-turno" id="turnoX"></div>
+        <div class="icono-turno" id="turnoO"></div>
     </div>
 </div>
 
@@ -120,6 +120,9 @@
 <script>
     const playerName = sessionStorage.getItem("PlayerName");
     const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
+    console.log(socket);
+
+    let miSimbolo = null;
     let tiempoRestante = 15;
     let intervaloTimer;
 
@@ -131,14 +134,19 @@
     };
 
     socket.onmessage = event => {
+        console.log("Mensaje recibido:", event.data);
         const data = JSON.parse(event.data);
 
         if (data.action === "update-board") {
+            console.log("Simbolo recibido:", data.simbolo);
+            if (data.simbolo) {
+                miSimbolo = data.simbolo;
+            }
             actualizarTablero(data.tablero, data.turno, data.ganador);
         }
 
         if (data.action === "endgame") {
-            mostrarMensajeFinal(data.msg);
+            mostrarMensajeFinal(data.msg, data.ganador);
         }
 
         if (data.action === "timeout") {
@@ -146,7 +154,19 @@
         }
 
         if (data.action === "room-joined") {
-            document.getElementById("inicioPartida").classList.remove("d-none");
+            const inicio = document.getElementById("inicioPartida");
+            inicio.classList.remove("d-none");
+            setTimeout(() => inicio.classList.add("d-none"), 2500);
+        }
+
+        if (data.action === "revancha-status") {
+            document.getElementById("estadoRevancha").textContent =
+                `Jugadores listos para revancha: ${data.jugadores}/${data.total}`;
+        }
+
+        if (data.action === "revancha-rechazada") {
+            alert(data.msg);
+            window.location.href = "/List";
         }
     };
 
@@ -175,17 +195,10 @@
         document.getElementById("turnoX").textContent = turno === "X" ? "❌" : "";
         document.getElementById("turnoO").textContent = turno === "O" ? "⭕" : "";
 
-        const miSimbolo = obtenerSimboloJugador();
-        const turnoActual = document.getElementById("turnoActual");
-        turnoActual.textContent = turno === miSimbolo
-            ? "🕹️ ¡Es tu turno!"
-            : "⏳ Esperando al oponente...";
+        document.getElementById("turnoActual").textContent =
+            turno === miSimbolo ? "🕹️ ¡Es tu turno!" : "⏳ Esperando al oponente...";
 
         iniciarTimer();
-    }
-
-    function obtenerSimboloJugador() {
-        return playerName.endsWith("X") ? "X" : "O";
     }
 
     function iniciarTimer() {
@@ -197,23 +210,46 @@
         intervaloTimer = setInterval(() => {
             tiempoRestante--;
             timerDiv.textContent = `⏱ ${tiempoRestante}s`;
-            if (tiempoRestante <= 0) {
-                clearInterval(intervaloTimer);
-            }
+            if (tiempoRestante <= 0) clearInterval(intervaloTimer);
         }, 1000);
     }
 
-    function mostrarMensajeFinal(msg) {
+    function mostrarMensajeFinal(msg, ganador = null) {
         const mensaje = document.getElementById("mensajeJuego");
         mensaje.textContent = msg;
+        clearInterval(intervaloTimer);
 
-        if (msg.includes("Ganó")) {
+        if (ganador === miSimbolo) {
             confetti({
                 particleCount: 150,
                 spread: 70,
                 origin: { y: 0.6 }
             });
+            clearInterval(intervaloTimer);
         }
+        mostrarControlesRevancha();
+    }
+
+    function mostrarControlesRevancha() {
+        const container = document.createElement("div");
+        container.className = "mt-3 text-center";
+        container.innerHTML = `
+        <h5>¿Quieres jugar una revancha?</h5>
+        <button id="btnRevanchaSi" class="btn btn-success me-2">✅ Sí</button>
+        <button id="btnRevanchaNo" class="btn btn-danger">❌ No</button>
+        <p id="estadoRevancha" class="mt-2 text-muted"></p>
+    `;
+        document.querySelector(".centro").appendChild(container);
+
+        document.getElementById("btnRevanchaSi").onclick = () => {
+            socket.send(JSON.stringify({ action_type: "rematch-request", value: { name: playerName } }));
+            document.getElementById("estadoRevancha").textContent = "Esperando al otro jugador...";
+        };
+
+        document.getElementById("btnRevanchaNo").onclick = () => {
+            socket.send(JSON.stringify({ action_type: "rematch-decline", value: { name: playerName } }));
+            container.remove();
+        };
     }
 
     for (let i = 0; i < 9; i++) {

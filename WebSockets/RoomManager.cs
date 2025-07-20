@@ -116,24 +116,15 @@ public class RoomManager
         }
         room.Players.Remove(name); // Elimina el jugador de la sala
         Console.WriteLine($"{name} ha abandonado la sala: {roomId}");
-        if (room.Players.Count == 0)
+        foreach (var jugador in room.Players)
         {
-            ActiveRooms.Remove(roomId); // Si no hay jugadores, elimina la sala
-            WebSocketServerLauncher.Broadcast($"Sala eliminada: {roomId}");
-            Console.WriteLine($"Sala eliminada: {roomId}");
-        }
-        else
-        {
-            foreach (var jugador in room.Players)
+            WebSocketServerLauncher.SendTo(jugador, new
             {
-                WebSocketServerLauncher.SendTo(jugador, new
-                {
-                    action = "room-left",
-                    roomId,
-                    msg = $"{name} ha abandonado la sala.",
-                    players = room.Players
-                });
-            }
+                action = "room-left",
+                roomId,
+                msg = $"{name} ha abandonado la sala.",
+                players = room.Players
+            });
         }
         WebSocketServerLauncher.SendTo(name, new
         {

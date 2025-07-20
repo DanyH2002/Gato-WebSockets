@@ -9,4 +9,5 @@ public class GameSession
     public string Turno { get; set; } = "X";
     public string? Ganador { get; set; }
     public Dictionary<string, string> PlayerSymbols { get; set; } = new();
+    public HashSet<string> JugadoresQueAceptaronRevancha { get; set; } = new();
 }

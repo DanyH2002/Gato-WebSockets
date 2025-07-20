@@ -82,8 +82,15 @@ public static class WebSocketServerLauncher
                                 GameSessionManager.HandleMove(playerName, casilla);
                             }
                             break;
-                        case "rematch":
-
+                        case "rematch-request":
+                            GameSessionManager.RequestRematch(entry.Value.Name);
+                            break;
+                        case "rematch-decline":
+                            GameSessionManager.RejectRematch(entry.Value.Name);
+                            break;
+                        case "request-room-list":
+                            RoomManager.SendRoomListTo(playerName);
+                            Console.WriteLine($"Lista de salas enviada a {playerName}");
                             break;
                         default:
                             Console.WriteLine("Mensaje no reconocido");
