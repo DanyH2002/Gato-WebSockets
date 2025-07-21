@@ -33,6 +33,16 @@ public class GameSessionManager
         ActiveGames[roomId] = game;
         StartTurnTimer(roomId);
         BroadcastGameState(roomId);
+        Console.WriteLine($"Partida iniciada en la sala: {roomId}");
+        foreach (var jugador in players)
+        {
+            Console.WriteLine($"Enviando game-started a: {jugador}");
+            WebSocketServerLauncher.SendTo(jugador, new
+            {
+                action = "game-started",
+                msg = "Partida iniciada. ¡Buena suerte!"
+            });
+        }
     }
     public static void HandleMove(string playerName, int casilla)
     {
@@ -79,13 +89,37 @@ public class GameSessionManager
             });
         }
     }
+    public static void ForceVictory(string playerName, string roomId)
+    {
+        var game = ActiveGames.ContainsKey(roomId) ? ActiveGames[roomId] : null;
+        if (game == null) return;
+        var jugadoresActivos = game.PlayerSymbols.Keys.Where(p =>
+        p != playerName && RoomManager.IsPlayerInRoom(p)).ToList();
+        if (jugadoresActivos.Count == 1)
+        {
+            var simboloGanador = GetSymbolByPlayer(jugadoresActivos[0], game);
+            game.Ganador = simboloGanador ?? jugadoresActivos[0];
+            StopTurnTimer(roomId);
+            StatsManager.RegistrarResultado(game);
+            foreach (var jugador in game.PlayerSymbols.Keys)
+            {
+                WebSocketServerLauncher.SendTo(jugador, new
+                {
+                    action = "endgame",
+                    ganador = game.Ganador,
+                    msg = $"🏆 ¡Victoria automática para {game.Ganador} por abandono del oponente!"
+                });
+            }
+        }
+    }
+
     //** Metodo complementarios
-    private static void BroadcastGameState(string roomId)
+    public static void BroadcastGameState(string roomId)
     {
         var game = ActiveGames[roomId];
         foreach (var jugador in game.PlayerSymbols.Keys)
         {
-            Console.WriteLine("$[PlayerSymbols] {jugador} = {game.PlayerSymbols[jugador]}");
+            Console.WriteLine($"[PlayerSymbols] {jugador} = {game.PlayerSymbols[jugador]}");
             WebSocketServerLauncher.SendTo(jugador, new
             {
                 action = "update-board",
@@ -93,7 +127,9 @@ public class GameSessionManager
                 turno = game.Turno,
                 ganador = game.Ganador,
                 simbolo = game.PlayerSymbols[jugador],
-                //msg = $"Turno de {jugador} y simbolo {game.PlayerSymbols[jugador]}"
+                playerNames = game.PlayerSymbols.Keys.ToList(),
+                tableroSimbolos = game.PlayerSymbols,
+                roomId = game.RoomId
             });
         }
         var jugadorDelTurno = GetPlayerNameBySymbol(game.Turno, game);
@@ -127,6 +163,15 @@ public class GameSessionManager
     private static string? GetSymbolByPlayer(string playerName, GameSession game)
     {
         return game.PlayerSymbols.TryGetValue(playerName, out var symbol) ? symbol : null;
+    }
+
+    public static void HandleBoardRequest(string playerName)
+    {
+        var roomId = RoomManager.GetRoomIdOfPlayer(playerName);
+        if (roomId != null && ActiveGames.ContainsKey(roomId))
+        {
+            BroadcastGameState(roomId);
+        }
     }
 
     //** Timer por turno
@@ -203,11 +248,12 @@ public class GameSessionManager
     public static void RejectRematch(string playerName)
     {
         var roomId = RoomManager.GetRoomIdOfPlayer(playerName);
-        RoomManager.HandleLeave(playerName, roomId);
         WebSocketServerLauncher.SendTo(playerName, new
         {
             action = "revancha-rechazada",
             msg = "Has salido de la sala. ¡Puedes unirte a otra partida!"
         });
+        RoomManager.HandleLeave(playerName, roomId);
+        RoomManager.SendRoomListTo(playerName);
     }
 }

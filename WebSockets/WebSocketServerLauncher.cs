@@ -45,6 +45,19 @@ public static class WebSocketServerLauncher
                     ConnectedPlayers.Remove(playerName);
                     Broadcast($"{playerName} ha salido.");
                 }
+                var roomId = RoomManager.GetRoomIdOfPlayer(playerName);
+                if (roomId != null)
+                {
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(1000);
+                        var stillConnected = ConnectedPlayers.ContainsKey(playerName);
+                        if (!stillConnected)
+                        {
+                            RoomManager.HandleLeave(playerName, roomId);
+                        }
+                    });
+                }
             };
             socket.OnMessage = message =>
             {
@@ -67,13 +80,12 @@ public static class WebSocketServerLauncher
                         case "create":
                             RoomManager.HandleCreate(playerName);
                             break;
-
                         case "join":
                             RoomManager.HandleJoin(playerName, entry.Value.RoomId);
                             break;
-
                         case "leave":
                             RoomManager.HandleLeave(playerName, entry.Value.RoomId);
+                            RoomManager.SendRoomListTo(playerName);
                             break;
 
                         case "move":
@@ -91,6 +103,9 @@ public static class WebSocketServerLauncher
                         case "request-room-list":
                             RoomManager.SendRoomListTo(playerName);
                             Console.WriteLine($"Lista de salas enviada a {playerName}");
+                            break;
+                        case "request-board-state":
+                            GameSessionManager.HandleBoardRequest(playerName);
                             break;
                         default:
                             Console.WriteLine("Mensaje no reconocido");

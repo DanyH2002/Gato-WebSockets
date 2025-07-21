@@ -12,7 +12,7 @@ public class RoomManager
     private static readonly Dictionary<string, RoomModel> ActiveRooms = new();
     public static void HandleCreate(string name)
     {
-        if (PlayerInRoom(name))
+        if (IsPlayerInRoom(name))
         {
             WebSocketServerLauncher.SendTo(name, new
             {
@@ -26,8 +26,8 @@ public class RoomManager
         {
             RoomId = roomId,
         };
-        HandleJoin(name, roomId); // Agrega el jugador a la sala
         ActiveRooms[roomId] = newRoom; // Agrega la sala al diccionario
+        //HandleJoin(name, roomId);
         WebSocketServerLauncher.SendTo(name, new
         {
             action = "room-created",
@@ -49,7 +49,7 @@ public class RoomManager
             });
             return;
         }
-        if (PlayerInRoom(name))
+        if (IsPlayerInRoom(name))
         {
             WebSocketServerLauncher.SendTo(name, new
             {
@@ -79,19 +79,13 @@ public class RoomManager
                 players = room.Players
             });
         }
-        BroadcastRoomList();
         Console.WriteLine($"{name} se ha unido a la sala: {roomId}");
         // Inicar el juego
         if (room.Players.Count == 2)
         {
             GameSessionManager.StartGame(roomId, room.Players);
-            Console.WriteLine($"Partida iniciada en la sala: {roomId}");
-            WebSocketServerLauncher.SendTo(name, new
-            {
-                action = "game-started",
-                msg = "Partida iniciada. ¡Buena suerte!"
-            });
         }
+        BroadcastRoomList();
     }
     public static void HandleLeave(string name, string roomId)
     {
@@ -114,10 +108,17 @@ public class RoomManager
             });
             return;
         }
+        Task.Run(async () =>
+        {
+            await Task.Delay(2000);
+            GameSessionManager.ForceVictory(name, roomId);
+        });
         room.Players.Remove(name); // Elimina el jugador de la sala
+
         Console.WriteLine($"{name} ha abandonado la sala: {roomId}");
         foreach (var jugador in room.Players)
         {
+            Console.WriteLine($"Enviando room-left a: {jugador}");
             WebSocketServerLauncher.SendTo(jugador, new
             {
                 action = "room-left",
@@ -125,6 +126,7 @@ public class RoomManager
                 msg = $"{name} ha abandonado la sala.",
                 players = room.Players
             });
+            //SendRoomListTo(name);
         }
         WebSocketServerLauncher.SendTo(name, new
         {
@@ -132,8 +134,9 @@ public class RoomManager
             roomId,
             msg = "Has abandonado la sala."
         });
-        BroadcastRoomList();
         Console.WriteLine($"{name} ha abandonado la sala: {roomId}, y se le aviso a los demas");
+        BroadcastRoomList();
+        SendRoomListTo(name);
     }
     //* Metodos auxiliares
     public static void SendRoomListTo(string playerName)
@@ -150,6 +153,12 @@ public class RoomManager
             action = "room-list",
             rooms = roomList
         });
+        Console.WriteLine($"Lista de salas enviada a {playerName}, y contiene: {roomList.Count} sala(s).");
+        foreach (var sala in roomList)
+        {
+            Console.WriteLine($"Sala ID: {sala.RoomId}, Jugadores: {string.Join(", ", sala.players)}, Llena: {sala.isFull}");
+        }
+
     }
     public static void BroadcastRoomList()
     {
@@ -158,17 +167,11 @@ public class RoomManager
             SendRoomListTo(player);
         }
     }
-    private static bool PlayerInRoom(string playerName)
+    public static bool IsPlayerInRoom(string playerName)
     {
-        foreach (var room in ActiveRooms.Values) // Recorre todas las salas
-        {
-            if (room.Players.Contains(playerName)) // Si el jugador está en la sala
-            {
-                return true;
-            }
-        }
-        return false;
+        return ActiveRooms.Values.Any(r => r.Players.Contains(playerName));
     }
+
     //busca en todas las salas activas y devuelve el RoomId si el jugador está en alguna
     public static string? GetRoomIdOfPlayer(string playerName)
     {

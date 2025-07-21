@@ -15,6 +15,7 @@
 <div class="contenedor-gato">
     <div class="jugador">
         <h3>Jugador 1</h3>
+        <h4 id="nombreJugadorX" class="text-muted"></h4>
         <div class="icono-turno" id="turnoX"></div>
     </div>
 
@@ -30,13 +31,14 @@
             }
         </div>
 
-        <button class="btn btn-outline-secondary mt-3" type="button" onclick="window.location.href = '/Lobby';">
-            ⬅ Volver al Lobby
+        <button class="btn btn-danger mt-3 ms-2" type="button" id="btnSalirPartida">
+            🚪 Salir de la partida
         </button>
     </div>
 
     <div class="jugador">
         <h3>Jugador 2</h3>
+        <h4 id="nombreJugadorO" class="text-muted"></h4>
         <div class="icono-turno" id="turnoO"></div>
     </div>
 </div>
@@ -111,6 +113,12 @@
         background-color: #e0e0e0;
     }
 
+    #btnSalirPartida {
+        z-index: 9999 !important;
+        position: relative;
+        pointer-events: auto;
+    }
+
     hr {
         margin: 20px 0;
     }
@@ -125,10 +133,16 @@
     let miSimbolo = null;
     let tiempoRestante = 15;
     let intervaloTimer;
+    let saliendo = false;
+    let currentRoomId = null;
 
     socket.onopen = () => {
         socket.send(JSON.stringify({
             action_type: "identify",
+            value: { name: playerName }
+        }));
+        socket.send(JSON.stringify({
+            action_type: "request-board-state",
             value: { name: playerName }
         }));
     };
@@ -142,6 +156,14 @@
             if (data.simbolo) {
                 miSimbolo = data.simbolo;
             }
+            currentRoomId = data.roomId;
+
+            document.getElementById("nombreJugadorX").textContent = Object.entries(data.tableroSimbolos)
+                .find(([nombre, simbolo]) => simbolo === "X")?.[0] || "X";
+
+            document.getElementById("nombreJugadorO").textContent = Object.entries(data.tableroSimbolos)
+                .find(([nombre, simbolo]) => simbolo === "O")?.[0] || "O";
+
             actualizarTablero(data.tablero, data.turno, data.ganador);
         }
 
@@ -154,10 +176,16 @@
         }
 
         if (data.action === "room-joined") {
+            console.log("esta en la sala: ", data.roomId);
+        }
+
+        if (data.action === "game-started") {
+            console.log("Juego comenzando");
             const inicio = document.getElementById("inicioPartida");
             inicio.classList.remove("d-none");
             setTimeout(() => inicio.classList.add("d-none"), 2500);
         }
+
 
         if (data.action === "revancha-status") {
             document.getElementById("estadoRevancha").textContent =
@@ -165,10 +193,33 @@
         }
 
         if (data.action === "revancha-rechazada") {
-            alert(data.msg);
+            console.log("Revancha rechazada");
+            sessionStorage.setItem("PlayerName", playerName);
             window.location.href = "/List";
         }
+
+        if (data.action === "room-left") {
+            if (data.msg === "Has abandonado la sala.") {
+                sessionStorage.setItem("PlayerName", playerName);
+                window.location.href = "/List";
+            } else {
+                const mensaje = document.getElementById("mensajeJuego");
+                mensaje.textContent = `${data.msg}`;
+                mensaje.classList.add("text-warning");
+            }
+        }
+
     };
+
+    document.getElementById("btnSalirPartida").addEventListener("click", () => {
+        if (saliendo) return;
+        saliendo = true;
+        socket.send(JSON.stringify({
+            action_type: "leave",
+            value: { name: playerName, roomId: currentRoomId }
+        }));
+    });
+
 
     function enviarMovimiento(index) {
         socket.send(JSON.stringify({
@@ -181,6 +232,12 @@
     }
 
     function actualizarTablero(tablero, turno, ganador) {
+        // Limpiar controles previos
+        if (ganador === null) {
+            const controlesPrevios = document.querySelector(".mt-3.text-center");
+            if (controlesPrevios) controlesPrevios.remove();
+        }
+
         for (let i = 0; i < 9; i++) {
             const btn = document.getElementById(`casilla-${i}`);
             btn.textContent = tablero[i];
@@ -227,10 +284,21 @@
             });
             clearInterval(intervaloTimer);
         }
+        if (msg.includes("abandono del oponente")) {
+            mensaje.classList.add("text-success");
+            mensaje.innerHTML = `🏆 <strong>${msg}</strong>`;
+            clearInterval(intervaloTimer);
+        } else {
+            mensaje.classList.remove("text-success");
+            clearInterval(intervaloTimer);
+        }
+
         mostrarControlesRevancha();
     }
 
+
     function mostrarControlesRevancha() {
+        if (document.getElementById("btnRevanchaSi")) return; // Si ya existen los botones, no hacer nada
         const container = document.createElement("div");
         container.className = "mt-3 text-center";
         container.innerHTML = `
@@ -243,12 +311,19 @@
 
         document.getElementById("btnRevanchaSi").onclick = () => {
             socket.send(JSON.stringify({ action_type: "rematch-request", value: { name: playerName } }));
-            document.getElementById("estadoRevancha").textContent = "Esperando al otro jugador...";
+            //document.getElementById("estadoRevancha").textContent = "Esperando al otro jugador...";
+            const estado = document.getElementById("estadoRevancha");
+            estado.textContent = "Esperando al otro jugador...";
+            estado.dataset.enviado = "true"; 
         };
 
         document.getElementById("btnRevanchaNo").onclick = () => {
+            sessionStorage.setItem("PlayerName", playerName);
             socket.send(JSON.stringify({ action_type: "rematch-decline", value: { name: playerName } }));
-            container.remove();
+            socket.close(1000, "Rechazo de revancha");
+            setTimeout(() => {
+                window.location.href = "/List";
+            }, 250);
         };
     }
 

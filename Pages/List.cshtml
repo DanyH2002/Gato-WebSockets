@@ -64,17 +64,16 @@
 </div>
 
 <script>
-    // Nombre del jugador
-    let playerName = sessionStorage.getItem("PlayerName");
-    if (!playerName || playerName === "Invitado") {
-        playerName = "@Model.NombreJugadorActual";
+    let playerName = sessionStorage.getItem("PlayerName") || "@Model.NombreJugadorActual";
+    if (!playerName || playerName === "undefined" || playerName.trim() === "") {
+        alert("Error: No se pudo recuperar el nombre del jugador. Redirigiendo al login...");
+        window.location.href = "/Index";
+    } else {
         sessionStorage.setItem("PlayerName", playerName);
     }
 
-    // Actualizar bienvenida 
-    document.querySelector("h2.text-center.mb-4").textContent = `🎮 Bienvenido: ${playerName}`;
 
-    // Conexion WebSocket
+    document.querySelector("h2.text-center.mb-4").textContent = `🎮 Bienvenido: ${playerName}`;
     const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
 
     socket.onopen = () => {
@@ -84,16 +83,23 @@
             value: { name: playerName }
         }));
 
-        setTimeout(() => {
-            socket.send(JSON.stringify({
-                action_type: "request-room-list",
-                value: { name: playerName }
-            }));
-        }, 200);
+        socket.send(JSON.stringify({
+            action_type: "request-room-list",
+            value: { name: playerName }
+        }));
     };
+
+    setInterval(() => {
+        socket.send(JSON.stringify({
+            action_type: "request-room-list",
+            value: { name: playerName }
+        }));
+    }, 5000);
+
 
     socket.onmessage = event => { // Mensaje recibido del servidor
         const data = JSON.parse(event.data);
+        console.log("Mensaje recibido:", data);
 
         if (data.action === "welcome") { // Mensaje de bienvenida
             mostrarMensajeBienvenida(data.msg);
@@ -103,12 +109,21 @@
         if (data.action === "room-list") { // Lista de salas
             console.log("Salas recibidas:", data.rooms);
             renderizarSalas(data.rooms);
+            console.log("⚡ Render de salas ejecutado.");
             return;
         }
 
-        if (data.action === "room-joined") { // Unirse a una sala
+        if (data.action === "room-joined") {
             mostrarNotificacion(data.msg);
+            console.log("Se unio a sala: ", data.roomId);
             window.location.href = "/Gato";
+            return;
+        }
+
+        if (data.action === "game-started") {
+            console.log("Juego comenzando. Redirigiendo a /Gato");
+            sessionStorage.setItem("redirecting", "true");
+            //window.location.href = "/Gato";
             return;
         }
 
@@ -116,6 +131,15 @@
             mostrarNotificacion(data.msg);
             return;
         }
+
+        if (data.action === "room-left") {
+            mostrarNotificacion(data.msg);
+            socket.send(JSON.stringify({
+                action_type: "request-room-list",
+                value: { name: playerName }
+            }));
+        }
+
 
         if (["error", "join-failed", "leave-failed"].includes(data.action)) {
             mostrarNotificacion(data.msg);
@@ -142,42 +166,49 @@
 
     // Funciones para renderizar salas 
     function renderizarSalas(salas) {
-        const lista = document.getElementById("listaSalas");
-        lista.innerHTML = "";
+        try {
+            const lista = document.getElementById("listaSalas");
+            lista.innerHTML = "";
+            salas.forEach(room => {
+                const li = document.createElement("li");
+                li.className = "list-group-item d-flex justify-content-between align-items-center";
 
-        salas.forEach(room => {
-            const li = document.createElement("li");
-            li.className = "list-group-item d-flex justify-content-between align-items-center";
+                const descripcion = document.createElement("span");
+                descripcion.innerHTML = `<strong>${room.RoomId}</strong> — ${room.isFull ? "🔴 En partida" : room.players.length === 1 ? "🟢 1 jugador esperando" : "⚪ Vacía"
+                    }`;
 
-            const descripcion = document.createElement("span");
-            descripcion.innerHTML = `<strong>${room.RoomId}</strong> — ${room.isFull ? "🔴 En partida" : room.players.length === 1 ? "🟢 1 jugador esperando" : "⚪ Vacía"
-                }`;
+                const boton = document.createElement("button");
+                boton.className = "btn btn-sm";
 
-            const boton = document.createElement("button");
-            boton.className = "btn btn-sm";
+                if (room.isFull) {
+                    boton.classList.add("btn-danger");
+                    boton.textContent = "Sala llena";
+                    boton.disabled = true;
+                } else {
+                    boton.classList.add("btn-success");
+                    boton.textContent = "Unirse";
+                    boton.onclick = () => {
+                        console.log(`Unirse a la sala ${room.RoomId}`);
+                        socket.send(JSON.stringify({
+                            action_type: "join",
+                            value: {
+                                name: playerName,
+                                roomId: room.RoomId
+                            }
+                        }));
+                    };
+                }
 
-            if (room.isFull) {
-                boton.classList.add("btn-danger");
-                boton.textContent = "Sala llena";
-                boton.disabled = true;
-            } else {
-                boton.classList.add("btn-success");
-                boton.textContent = "Unirse";
-                boton.onclick = () => {
-                    socket.send(JSON.stringify({
-                        action_type: "join",
-                        value: {
-                            name: playerName,
-                            roomId: room.RoomId
-                        }
-                    }));
-                };
-            }
+                li.appendChild(descripcion);
+                li.appendChild(boton);
+                lista.appendChild(li);
+            });
+            console.log(" Renderizado de salas completo");
+        }
+        catch (err) {
+            console.error("❌ Error al renderizar salas:", err);
+        }
 
-            li.appendChild(descripcion);
-            li.appendChild(boton);
-            lista.appendChild(li);
-        });
     }
 
     // Eventos para botones de acción
