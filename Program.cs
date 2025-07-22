@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using gaton.Model;
 using gaton.Validators;
+using gaton.WebSockets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,10 +31,33 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseWebSockets();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/ws"))
+    {
+        var playerName = context.Request.Path.Value?.Split("/").Last();
+        if (context.WebSockets.IsWebSocketRequest && !string.IsNullOrWhiteSpace(playerName))
+        {
+            var socket = await context.WebSockets.AcceptWebSocketAsync();
+            await WebSocketHandler.HandleAsync(socket, playerName);
+        }
+        else
+        {
+            context.Response.StatusCode = 400;
+        }
+    }
+    else
+    {
+        await next();
+    }
+});
+
 app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapRazorPages();
-gaton.WebSockets.WebSocketServerLauncher.Start();
+//gaton.WebSockets.WebSocketServerLauncher.Start();
 app.Run();

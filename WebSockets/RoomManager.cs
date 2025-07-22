@@ -14,7 +14,7 @@ public class RoomManager
     {
         if (IsPlayerInRoom(name))
         {
-            WebSocketServerLauncher.SendTo(name, new
+            WebSocketHandler.SendTo(name, new
             {
                 action = "error",
                 msg = "Ya estás en una sala."
@@ -28,13 +28,13 @@ public class RoomManager
         };
         ActiveRooms[roomId] = newRoom; // Agrega la sala al diccionario
         //HandleJoin(name, roomId);
-        WebSocketServerLauncher.SendTo(name, new
+        WebSocketHandler.SendTo(name, new
         {
             action = "room-created",
             roomId,
             msg = $"Sala creada con ID {roomId}. Esperando otro jugador..."
         });
-        WebSocketServerLauncher.Broadcast($"{name} ha creado una nueva sala: {roomId}");
+        WebSocketHandler.Broadcast($"{name} ha creado una nueva sala: {roomId}");
         BroadcastRoomList();
         Console.WriteLine($"Sala creada: {roomId} por {name}");
     }
@@ -42,7 +42,7 @@ public class RoomManager
     {
         if (!ActiveRooms.ContainsKey(roomId))
         {
-            WebSocketServerLauncher.SendTo(name, new
+            WebSocketHandler.SendTo(name, new
             {
                 action = "error",
                 msg = "Sala no encontrada."
@@ -51,7 +51,7 @@ public class RoomManager
         }
         if (IsPlayerInRoom(name))
         {
-            WebSocketServerLauncher.SendTo(name, new
+            WebSocketHandler.SendTo(name, new
             {
                 action = "error",
                 msg = "Ya estás en una sala, no puedes unirte a otra."
@@ -61,7 +61,7 @@ public class RoomManager
         var room = ActiveRooms[roomId]; // Obtiene la sala
         if (room.Players.Count >= 2)
         {
-            WebSocketServerLauncher.SendTo(name, new
+            WebSocketHandler.SendTo(name, new
             {
                 action = "join-failed",
                 msg = "La sala está llena."
@@ -71,7 +71,7 @@ public class RoomManager
         room.Players.Add(name); // Agrega el jugador a la sala
         foreach (var jugador in room.Players)
         {
-            WebSocketServerLauncher.SendTo(jugador, new
+            WebSocketHandler.SendTo(jugador, new
             {
                 action = "room-joined",
                 roomId,
@@ -91,7 +91,7 @@ public class RoomManager
     {
         if (!ActiveRooms.ContainsKey(roomId))
         {
-            WebSocketServerLauncher.SendTo(name, new
+            WebSocketHandler.SendTo(name, new
             {
                 action = "leave-failed",
                 msg = "La sala no existe."
@@ -101,7 +101,7 @@ public class RoomManager
         var room = ActiveRooms[roomId];
         if (!room.Players.Contains(name))
         {
-            WebSocketServerLauncher.SendTo(name, new
+            WebSocketHandler.SendTo(name, new
             {
                 action = "leave-failed",
                 msg = "No estás dentro de esta sala."
@@ -119,7 +119,7 @@ public class RoomManager
         foreach (var jugador in room.Players)
         {
             Console.WriteLine($"Enviando room-left a: {jugador}");
-            WebSocketServerLauncher.SendTo(jugador, new
+            WebSocketHandler.SendTo(jugador, new
             {
                 action = "room-left",
                 roomId,
@@ -128,7 +128,7 @@ public class RoomManager
             });
             //SendRoomListTo(name);
         }
-        WebSocketServerLauncher.SendTo(name, new
+        WebSocketHandler.SendTo(name, new
         {
             action = "room-left",
             roomId,
@@ -148,21 +148,21 @@ public class RoomManager
             isFull = r.Value.Players.Count >= 2
         }).ToList();
 
-        WebSocketServerLauncher.SendTo(playerName, new
+        WebSocketHandler.SendTo(playerName, new
         {
             action = "room-list",
             rooms = roomList
         });
-        Console.WriteLine($"Lista de salas enviada a {playerName}, y contiene: {roomList.Count} sala(s).");
+        /*Console.WriteLine($"Lista de salas enviada a {playerName}, y contiene: {roomList.Count} sala(s).");
         foreach (var sala in roomList)
         {
             Console.WriteLine($"Sala ID: {sala.RoomId}, Jugadores: {string.Join(", ", sala.players)}, Llena: {sala.isFull}");
-        }
+        }*/
 
     }
     public static void BroadcastRoomList()
     {
-        foreach (var player in WebSocketServerLauncher.GetConnectedPlayerNames())
+        foreach (var player in WebSocketHandler.GetConnectedPlayerNames())
         {
             SendRoomListTo(player);
         }

@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using gaton.Helpers;
 
 namespace gaton.WebSockets;
+/*
+Gestion de estadisticas despues de cada partida, enviandolos a la base de datos
+*/
 
 public static class StatsManager
 {
@@ -40,8 +43,9 @@ public static class StatsManager
             if (resultado == "Victoria") stats.Victorias++;
             else if (resultado == "Empate") stats.Empates++;
 
-            context.SaveChanges();
+            //context.SaveChanges();
         }
+        context.SaveChanges();
     }
 }
 

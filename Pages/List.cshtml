@@ -74,7 +74,9 @@
 
 
     document.querySelector("h2.text-center.mb-4").textContent = `🎮 Bienvenido: ${playerName}`;
-    const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
+    const wsProtocol = location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(`${wsProtocol}://${location.host}/ws/${playerName}`);
+    //const socket = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/${playerName}`);
 
     socket.onopen = () => {
         console.log(`Conectado como ${playerName}`);

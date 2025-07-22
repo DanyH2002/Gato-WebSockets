@@ -3,7 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace gaton.Helpers;
-
+/*
+Esta clase  simplifica el acceso a la conexion configurada en appsettings.json
+*/
 public static class ConfigHelper
 {
     public static string GetConnectionString(string name)

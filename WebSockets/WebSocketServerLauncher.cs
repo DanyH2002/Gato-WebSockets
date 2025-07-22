@@ -10,11 +10,11 @@ Inia el servidor, maneja conexion base, y enruta mensajes.
 */
 public static class WebSocketServerLauncher
 {
-    private static WebSocketServer? server;
+   /* private static WebSocketServer? server;
     private static readonly Dictionary<string, IWebSocketConnection> ConnectedPlayers = new();
     public static void Start()
     {
-        server = new WebSocketServer("ws://0.0.0.0:9001"); // Lee todas las interfaces de red
+        server = new WebSocketServer("ws://0.0.0.0:5067"); // Lee todas las interfaces de red
         server.Start(socket =>
         {
             socket.OnOpen = () =>
@@ -119,7 +119,7 @@ public static class WebSocketServerLauncher
             };
         });
 
-        Console.WriteLine("Servidor WebSocket iniciado en ws://localhost:9001");
+        //Console.WriteLine("Servidor WebSocket iniciado en wss://localhost:9001");
     }
     // Envia un mensaje a todos los jugadores conectados
     public static void Broadcast(string message)
@@ -142,6 +142,7 @@ public static class WebSocketServerLauncher
     public static IEnumerable<string> GetConnectedPlayerNames()
     {
         return ConnectedPlayers.Keys;
-    }
+    } 
+    */
 
 }

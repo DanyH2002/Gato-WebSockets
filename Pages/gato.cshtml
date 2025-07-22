@@ -127,7 +127,8 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
     const playerName = sessionStorage.getItem("PlayerName");
-    const socket = new WebSocket(`ws://localhost:9001/${playerName}`);
+    const wsProtocol = location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(`${wsProtocol}://${location.host}/ws/${playerName}`);
     console.log(socket);
 
     let miSimbolo = null;

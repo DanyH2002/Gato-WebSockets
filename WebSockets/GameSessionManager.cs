@@ -37,7 +37,7 @@ public class GameSessionManager
         foreach (var jugador in players)
         {
             Console.WriteLine($"Enviando game-started a: {jugador}");
-            WebSocketServerLauncher.SendTo(jugador, new
+            WebSocketHandler.SendTo(jugador, new
             {
                 action = "game-started",
                 msg = "Partida iniciada. ¡Buena suerte!"
@@ -79,7 +79,7 @@ public class GameSessionManager
 
         foreach (var jugador in game.PlayerSymbols.Keys)
         {
-            WebSocketServerLauncher.SendTo(jugador, new
+            WebSocketHandler.SendTo(jugador, new
             {
                 action = "endgame",
                 ganador = game.Ganador,
@@ -103,7 +103,7 @@ public class GameSessionManager
             StatsManager.RegistrarResultado(game);
             foreach (var jugador in game.PlayerSymbols.Keys)
             {
-                WebSocketServerLauncher.SendTo(jugador, new
+                WebSocketHandler.SendTo(jugador, new
                 {
                     action = "endgame",
                     ganador = game.Ganador,
@@ -120,7 +120,7 @@ public class GameSessionManager
         foreach (var jugador in game.PlayerSymbols.Keys)
         {
             Console.WriteLine($"[PlayerSymbols] {jugador} = {game.PlayerSymbols[jugador]}");
-            WebSocketServerLauncher.SendTo(jugador, new
+            WebSocketHandler.SendTo(jugador, new
             {
                 action = "update-board",
                 tablero = game.Tablero,
@@ -190,7 +190,7 @@ public class GameSessionManager
 
             if (jugador != null)
             {
-                WebSocketServerLauncher.SendTo(jugador, new
+                WebSocketHandler.SendTo(jugador, new
                 {
                     action = "timeout",
                     msg = "⏱ Se agotó tu tiempo. Turno perdido."
@@ -226,7 +226,7 @@ public class GameSessionManager
 
         foreach (var jugador in game.PlayerSymbols.Keys)
         {
-            WebSocketServerLauncher.SendTo(jugador, new
+            WebSocketHandler.SendTo(jugador, new
             {
                 action = "revancha-status",
                 jugadores = game.JugadoresQueAceptaronRevancha.Count,
@@ -248,7 +248,7 @@ public class GameSessionManager
     public static void RejectRematch(string playerName)
     {
         var roomId = RoomManager.GetRoomIdOfPlayer(playerName);
-        WebSocketServerLauncher.SendTo(playerName, new
+        WebSocketHandler.SendTo(playerName, new
         {
             action = "revancha-rechazada",
             msg = "Has salido de la sala. ¡Puedes unirte a otra partida!"
