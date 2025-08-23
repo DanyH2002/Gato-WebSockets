@@ -10,8 +10,19 @@ Gestion del estado de las rooms
 public class RoomManager
 {
     private static readonly Dictionary<string, RoomModel> ActiveRooms = new();
+    private static readonly Dictionary<string, DateTime> EmptyRoomTimers = new();
+
     public static void HandleCreate(string name)
     {
+        if (IsPlayerInRoom(name) || HasEmptyRoomCreatedBy(name))
+        {
+            WebSocketHandler.SendTo(name, new
+            {
+                action = "error",
+                msg = "Ya has creado una sala. Únete o abandónala antes de crear otra."
+            });
+            return;
+        }
         if (IsPlayerInRoom(name))
         {
             WebSocketHandler.SendTo(name, new
@@ -25,6 +36,7 @@ public class RoomManager
         var newRoom = new RoomModel
         {
             RoomId = roomId,
+            CreatedBy = name
         };
         ActiveRooms[roomId] = newRoom; // Agrega la sala al diccionario
         //HandleJoin(name, roomId);
@@ -35,6 +47,7 @@ public class RoomManager
             msg = $"Sala creada con ID {roomId}. Esperando otro jugador..."
         });
         WebSocketHandler.Broadcast($"{name} ha creado una nueva sala: {roomId}");
+        HandleJoin(name, roomId);
         BroadcastRoomList();
         Console.WriteLine($"Sala creada: {roomId} por {name}");
     }
@@ -69,6 +82,7 @@ public class RoomManager
             return;
         }
         room.Players.Add(name); // Agrega el jugador a la sala
+        EmptyRoomTimers.Remove(roomId);
         foreach (var jugador in room.Players)
         {
             WebSocketHandler.SendTo(jugador, new
@@ -137,6 +151,25 @@ public class RoomManager
         Console.WriteLine($"{name} ha abandonado la sala: {roomId}, y se le aviso a los demas");
         BroadcastRoomList();
         SendRoomListTo(name);
+        // Si la sala queda vacía, inicia temporizador de eliminación
+        if (room.Players.Count == 0)
+        {
+            EmptyRoomTimers[roomId] = DateTime.UtcNow;
+            Task.Run(async () =>
+            {
+                await Task.Delay(20000);
+                if (ActiveRooms.ContainsKey(roomId) &&
+                    ActiveRooms[roomId].Players.Count == 0 &&
+                    EmptyRoomTimers.ContainsKey(roomId) &&
+                    (DateTime.UtcNow - EmptyRoomTimers[roomId]).TotalSeconds >= 20)
+                {
+                    ActiveRooms.Remove(roomId);
+                    EmptyRoomTimers.Remove(roomId);
+                    Console.WriteLine($"Sala {roomId} eliminada por inactividad.");
+                    BroadcastRoomList();
+                }
+            });
+        }
     }
     //* Metodos auxiliares
     public static void SendRoomListTo(string playerName)
@@ -181,6 +214,13 @@ public class RoomManager
                 return kvp.Key;
         }
         return null;
+    }
+    private static bool HasEmptyRoomCreatedBy(string playerName)
+    {
+        return ActiveRooms.Values.Any(r =>
+            r.CreatedBy == playerName &&
+            r.Players.Count == 0
+        );
     }
 
 }

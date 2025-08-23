@@ -4,6 +4,10 @@ using Newtonsoft.Json;
 using gaton.Model;
 namespace gaton.WebSockets;
 
+/*
+Inia el servidor, maneja conexion base, y enruta mensajes.
+*/
+
 public class WebSocketHandler
 {
     private static readonly Dictionary<string, WebSocket> ConnectedPlayers = new();
