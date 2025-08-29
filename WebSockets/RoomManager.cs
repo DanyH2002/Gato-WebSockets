@@ -124,7 +124,7 @@ public class RoomManager
         }
         Task.Run(async () =>
         {
-            await Task.Delay(700);
+            await Task.Delay(500);
             GameSessionManager.ForceVictory(name, roomId);
         });
         room.Players.Remove(name); // Elimina el jugador de la sala
