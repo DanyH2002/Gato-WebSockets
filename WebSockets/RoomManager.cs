@@ -124,7 +124,7 @@ public class RoomManager
         }
         Task.Run(async () =>
         {
-            await Task.Delay(2000);
+            await Task.Delay(700);
             GameSessionManager.ForceVictory(name, roomId);
         });
         room.Players.Remove(name); // Elimina el jugador de la sala
@@ -202,7 +202,10 @@ public class RoomManager
     }
     public static bool IsPlayerInRoom(string playerName)
     {
-        return ActiveRooms.Values.Any(r => r.Players.Contains(playerName));
+        //return ActiveRooms.Values.Any(r => r.Players.Contains(playerName));
+        return ActiveRooms
+        .Where(r => !EmptyRoomTimers.ContainsKey(r.Key)) // excluye salas en proceso de eliminación
+        .Any(r => r.Value.Players.Contains(playerName));
     }
 
     //busca en todas las salas activas y devuelve el RoomId si el jugador está en alguna
@@ -215,6 +218,7 @@ public class RoomManager
         }
         return null;
     }
+    // saber si la sala esta vacia 
     private static bool HasEmptyRoomCreatedBy(string playerName)
     {
         return ActiveRooms.Values.Any(r =>

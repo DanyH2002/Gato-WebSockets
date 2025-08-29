@@ -52,7 +52,7 @@
                 </div>
                 @if (!string.IsNullOrEmpty(Model.RegisterError))
                 {
-                    <div class="alert alert-danger">@Model.RegisterError</div>
+                    <div class="alert alert-danger">@Html.Raw(Model.RegisterError)</div>
                 }
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">Registrate para jugar</button>

@@ -151,6 +151,16 @@
     socket.onmessage = event => {
         console.log("Mensaje recibido:", event.data);
         const data = JSON.parse(event.data);
+        currentRoomId = data.roomId;
+        console.log("Estado de currentRoomId:", currentRoomId);
+        
+        if (data.action === "room-list") {
+            const salaActual = data.rooms.find(r => r.players.includes(playerName));
+            if (salaActual) {
+                currentRoomId = salaActual.RoomId;
+                console.log("Asignado desde room-list:", currentRoomId);
+            }
+        }
 
         if (data.action === "update-board") {
             console.log("Simbolo recibido:", data.simbolo);
@@ -178,6 +188,8 @@
 
         if (data.action === "room-joined") {
             console.log("esta en la sala: ", data.roomId);
+            currentRoomId = data.roomId;
+            console.log("Estado de currentRoomId:", currentRoomId);
         }
 
         if (data.action === "game-started") {
@@ -212,14 +224,42 @@
 
     };
 
-    document.getElementById("btnSalirPartida").addEventListener("click", () => {
-        if (saliendo) return;
+
+    @* document.getElementById("btnSalirPartida").addEventListener("click", () => {
+        console.log("Estadod el boton: ", saliendo);
+        console.log("Estado de currentRoomId:", currentRoomId);
+        if (saliendo || !currentRoomId) return;
         saliendo = true;
         socket.send(JSON.stringify({
             action_type: "leave",
             value: { name: playerName, roomId: currentRoomId }
         }));
-    });
+        console.log("ya tuvo que salir");
+    }); *@
+
+        document.getElementById("btnSalirPartida").addEventListener("click", () => {
+            console.log("Estado del botón: ", saliendo);
+            console.log("Estado de currentRoomId:", currentRoomId);
+
+            if (saliendo) return;
+            saliendo = true;
+            if (!currentRoomId && lastKnownRoomId) {
+                currentRoomId = lastKnownRoomId;
+            }
+
+
+            const payload = {
+                action_type: "leave",
+                value: { name: playerName }
+            };
+            if (currentRoomId) {
+                payload.value.roomId = currentRoomId;
+            }
+
+            socket.send(JSON.stringify(payload));
+            console.log("Solicitud de salida enviada");
+        });
+
 
 
     function enviarMovimiento(index) {
@@ -315,7 +355,7 @@
             //document.getElementById("estadoRevancha").textContent = "Esperando al otro jugador...";
             const estado = document.getElementById("estadoRevancha");
             estado.textContent = "Esperando al otro jugador...";
-            estado.dataset.enviado = "true"; 
+            estado.dataset.enviado = "true";
         };
 
         document.getElementById("btnRevanchaNo").onclick = () => {
